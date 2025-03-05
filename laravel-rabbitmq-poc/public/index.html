@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>POC Frontend for Exam Image Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f4f4f4;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"],
+    input[type="file"],
+    button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .log {
+      background: #eef;
+      border: 1px solid #99c;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .log ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Exam Image Upload POC</h1>
+
+    <div class="upload-form">
+      <h2>Upload Image</h2>
+      <form id="uploadForm">
+        <label for="user_id">User ID:</label>
+        <input type="number" name="user_id" id="user_id" required value="1">
+
+        <label for="exam_id">Exam ID (optional):</label>
+        <input type="number" name="exam_id" id="exam_id" placeholder="Leave blank to create new exam">
+
+        <label for="image">Select Image:</label>
+        <input type="file" name="image" id="image" accept="image/*" required>
+
+        <button type="submit">Upload Image</button>
+      </form>
+    </div>
+
+    <div class="finish-exam">
+      <h2>Finish Exam</h2>
+      <form id="finishForm">
+        <label for="finish_exam_id">Exam ID:</label>
+        <input type="number" name="exam_id" id="finish_exam_id" required placeholder="Enter exam ID">
+        <button type="submit">Finish Exam</button>
+      </form>
+    </div>
+
+    <div class="log" id="log">
+      <h3>Log</h3>
+      <ul id="logList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const finishForm = document.getElementById('finishForm');
+    const logList = document.getElementById('logList');
+
+    // Helper to append messages to the log
+    function logMessage(message) {
+      const li = document.createElement('li');
+      li.textContent = message;
+      logList.appendChild(li);
+    }
+
+    // Upload Image Form Submission
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+      try {
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        logMessage("Upload response: " + JSON.stringify(data));
+
+        // Set exam_id on both forms if this is a new exam
+        if (data.exam_id) {
+          document.getElementById('exam_id').value = data.exam_id;
+          document.getElementById('finish_exam_id').value = data.exam_id;
+        }
+      } catch (error) {
+        logMessage("Upload error: " + error);
+      }
+    });
+
+    // Finish Exam Form Submission
+    finishForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(finishForm);
+      try {
+        const response = await fetch('/api/finish-exam', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        logMessage("Finish exam response: " + JSON.stringify(data));
+      } catch (error) {
+        logMessage("Finish exam error: " + error);
+      }
+    });
+  </script>
+</body>
+</html>
