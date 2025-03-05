@@ -45,18 +45,13 @@ Access the RabbitMQ management UI at [http://localhost:15672](http://localhost:1
 
 ### 2. Setup Laravel
 
-1. **Clone the Repository or Create a New Laravel Project:**
+1. **Clone the Repository:**
 
    ```bash
-   git clone https://your-repo-url/laravel-rabbitmq-poc.git
+   git clone https://github.com/ZodicSlanser/Heavy-decoupling-POC
    cd laravel-rabbitmq-poc
    ```
-   Or create a new project:
-   ```bash
-   composer create-project laravel/laravel laravel-rabbitmq-poc
-   cd laravel-rabbitmq-poc
-   ```
-
+   
 2. **Install Dependencies:**
 
    ```bash
@@ -95,21 +90,14 @@ Access the RabbitMQ management UI at [http://localhost:15672](http://localhost:1
    pip install pika requests
    ```
 
+### 4. Access the Frontend:
 
-
-### 4. Setup the Frontend
-
-1. **Place the Frontend File:**
-
-   Copy the provided `index.html` file (containing the upload and finish exam forms) into the Laravel `public` folder.
-
-2. **Access the Frontend:**
-
-   Start the Laravel server:
+  1- Start the Laravel server:
+  
    ```bash
    php artisan serve
    ```
-   Open your browser at [http://localhost:8000/index.html](http://localhost:8000/index.html) to use the frontend.
+  2- Open your browser at [http://localhost:8000/index.html](http://localhost:8000/index.html) to use the frontend.
 
 ## Using the Application
 
