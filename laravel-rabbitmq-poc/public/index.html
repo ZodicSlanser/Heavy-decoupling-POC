@@ -50,7 +50,7 @@
     <h1>Exam Image Upload POC</h1>
 
     <div class="upload-form">
-      <h2>Upload Image</h2>
+      <h2>Upload Images</h2>
       <form id="uploadForm">
         <label for="user_id">User ID:</label>
         <input type="number" name="user_id" id="user_id" required value="1">
@@ -58,10 +58,11 @@
         <label for="exam_id">Exam ID (optional):</label>
         <input type="number" name="exam_id" id="exam_id" placeholder="Leave blank to create new exam">
 
-        <label for="image">Select Image:</label>
-        <input type="file" name="image" id="image" accept="image/*" required>
+        <label for="images">Select Images (max 10):</label>
+        <!-- The "multiple" attribute allows selection of more than one file -->
+        <input type="file" name="images[]" id="images" accept="image/*" multiple required>
 
-        <button type="submit">Upload Image</button>
+        <button type="submit">Upload Images</button>
       </form>
     </div>
 
@@ -85,7 +86,7 @@
     const finishForm = document.getElementById('finishForm');
     const logList = document.getElementById('logList');
 
-    // Helper to append messages to the log
+    // Helper function to append messages to the log
     function logMessage(message) {
       const li = document.createElement('li');
       li.textContent = message;
@@ -95,7 +96,29 @@
     // Upload Image Form Submission
     uploadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(uploadForm);
+      const fileInput = document.getElementById('images');
+      const files = fileInput.files;
+
+      // Validate that no more than 10 images are selected
+      if (files.length > 10) {
+        logMessage("Error: You can only upload up to 10 images at a time.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('user_id', document.getElementById('user_id').value);
+
+      // Append exam_id if provided; Laravel will create a new exam if not provided
+      const examId = document.getElementById('exam_id').value;
+      if (examId) {
+        formData.append('exam_id', examId);
+      }
+
+      // Append each image file to formData
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images[]', files[i]);
+      }
+
       try {
         const response = await fetch('/api/upload-image', {
           method: 'POST',
@@ -104,7 +127,7 @@
         const data = await response.json();
         logMessage("Upload response: " + JSON.stringify(data));
 
-        // Set exam_id on both forms if this is a new exam
+        // If a new exam is created, update the exam_id fields for future uploads
         if (data.exam_id) {
           document.getElementById('exam_id').value = data.exam_id;
           document.getElementById('finish_exam_id').value = data.exam_id;

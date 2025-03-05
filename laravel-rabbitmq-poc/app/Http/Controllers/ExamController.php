@@ -13,30 +13,42 @@ class ExamController extends Controller
     // POST /upload-image
     public function uploadImage(Request $request)
     {
-        // Validate the incoming request
+        // Validate the request; note 'images' must be present and each file must be an image of max size 2MB
         $validated = $request->validate([
-            'user_id' => 'required|integer',
-            'exam_id' => 'nullable|integer', // If not provided, we create a new exam
-            'image' => 'required|image|max:2048', // max 2MB
+            'user_id'   => 'required|integer',
+            'exam_id'   => 'nullable|integer',
+            'images'    => 'required',
+            'images.*'  => 'image|max:2048'
         ]);
 
-        // Find existing exam or create a new one
-        $exam = $validated['exam_id'] ? Exam::find($validated['exam_id']) : new Exam(['user_id' => $validated['user_id']]);
-
-        if (!$exam) {
-            return response()->json(['error' => 'Exam not found'], 404);
+        // If exam_id is provided, try to find the exam; if not, create a new exam
+        if ($request->filled('exam_id')) {
+            $exam = Exam::find($request->exam_id);
+            if (!$exam) {
+                return response()->json(['error' => 'Exam not found'], 404);
+            }
+        } else {
+            $exam = new Exam();
+            $exam->user_id = $validated['user_id'];
+            $exam->images = []; // Initialize with an empty array
+            $exam->save();
         }
 
-        // Store the uploaded image (using the "public" disk)
-        $path = $request->file('image')->store('uploads', 'public');
+        // Array to hold paths of the uploaded files
+        $uploadedPaths = [];
 
-        // Update exam with new image path
-        $exam->addImage($path);
+        // Process each image file uploaded
+        foreach ($request->file('images') as $image) {
+            // Store the image in the "uploads" directory using the public disk
+            $path = $image->store('uploads', 'public');
+            $exam->addImage($path);
+            $uploadedPaths[] = $path;
+        }
 
         return response()->json([
-            'exam_id' => $exam->id,
+            'exam_id'         => $exam->id,
             'uploaded_images' => count($exam->images),
-            'image_path' => $path
+            'uploaded_paths'  => $uploadedPaths
         ]);
     }
 
